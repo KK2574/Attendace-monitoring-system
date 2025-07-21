@@ -13,13 +13,12 @@ mongoose.connect('mongodb://localhost:27017/fingerprint-attendance', {
 }).then(() => console.log('MongoDB Connected'))
   .catch((err) => console.log('MongoDB Connection Error:', err));
 
-// GET attendance
 app.get('/api/attendance', async (req, res) => {
   const data = await Attendance.find();
   res.json(data);
 });
 
-// ✅ POST attendance
+
 app.post('/api/attendance', async (req, res) => {
   const { fingerprintId } = req.body;
 
