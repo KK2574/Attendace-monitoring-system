@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Attendance Records</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+    
+    :root {
+      --bg-color: #f5f7fa;
+      --gradient-end: #c3cfe2;
+      --text-color: #2c3e50;
+      --table-bg: white;
+      --table-shadow: rgba(0, 0, 0, 0.1);
+      --header-bg-start: #3498db;
+      --header-bg-end: #9b59b6;
+      --header-text: white;
+      --even-row: #f8f9fa;
+      --hover-row: #e9f7fe;
+      --td-text: #555;
+      --loading-text: #7f8c8d;
+      --error-text: #e74c3c;
+    }
+    
+    .dark-mode {
+      --bg-color: #1a1a2e;
+      --gradient-end: #16213e;
+      --text-color: #f1f1f1;
+      --table-bg: #2a2a3a;
+      --table-shadow: rgba(0, 0, 0, 0.3);
+      --header-bg-start: #4b6cb7;
+      --header-bg-end: #182848;
+      --header-text: #ffffff;
+      --even-row: #2d2d3d;
+      --hover-row: #3a3a4a;
+      --td-text: #dddddd;
+      --loading-text: #aaaaaa;
+      --error-text: #ff6b6b;
+    }
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, var(--bg-color) 0%, var(--gradient-end) 100%);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      color: var(--text-color);
+      transition: all 0.5s ease;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: var(--header-bg-start);
+      color: var(--header-text);
+      border: none;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      z-index: 100;
+      transition: all 0.3s ease;
+    }
+    
+    .theme-toggle:hover {
+      transform: scale(1.1);
+    }
+    
+    h1 {
+      text-align: center;
+      color: var(--text-color);
+      margin: 30px 0;
+      font-size: 2.5rem;
+      position: relative;
+      display: inline-block;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    
+    h1::after {
+      content: '';
+      position: absolute;
+      width: 60%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--header-bg-start), var(--header-bg-end));
+      bottom: -10px;
+      left: 20%;
+      border-radius: 2px;
+    }
+    
+    table {
+      border-collapse: collapse;
+      width: 90%;
+      margin: 40px auto;
+      background: var(--table-bg);
+      box-shadow: 0 10px 30px var(--table-shadow);
+      border-radius: 10px;
+      overflow: hidden;
+      animation: fadeIn 0.8s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    th, td {
+      padding: 15px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+    
+    th {
+      background: linear-gradient(135deg, var(--header-bg-start) 0%, var(--header-bg-end) 100%);
+      color: var(--header-text);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      position: sticky;
+      top: 0;
+    }
+    
+    tr:nth-child(even) {
+      background-color: var(--even-row);
+    }
+    
+    tr:hover {
+      background-color: var(--hover-row);
+      transform: scale(1.02);
+      box-shadow: 0 5px 15px var(--table-shadow);
+    }
+    
+    td {
+      color: var(--td-text);
+    }
+    
+    .loading {
+      text-align: center;
+      color: var(--loading-text);
+      font-style: italic;
+      margin: 20px 0;
+    }
+    
+    /* Pulse animation for loading */
+    @keyframes pulse {
+      0% { opacity: 0.6; }
+      50% { opacity: 1; }
+      100% { opacity: 0.6; }
+    }
+    
+    .pulse {
+      animation: pulse 1.5s infinite ease-in-out;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      table {
+        width: 95%;
+      }
+      
+      th, td {
+        padding: 10px 5px;
+        font-size: 0.9rem;
+      }
+      
+      .theme-toggle {
+        width: 40px;
+        height: 40px;
+        top: 10px;
+        right: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" id="themeToggle">
+    <i class="fas fa-moon"></i>
+  </button>
+  
+  <div class="container">
+    <h1>Attendance Records</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>Fingerprint ID</th>
+          <th>Timestamp</th>
+        </tr>
+      </thead>
+      <tbody id="attendanceBody">
+        <tr><td colspan="2" class="loading pulse">Loading attendance data...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    // Theme toggle functionality
+    const themeToggle = document.getElementById('themeToggle');
+    const icon = themeToggle.querySelector('i');
+    
+    // Check for saved theme preference or use preferred color scheme
+    const savedTheme = localStorage.getItem('theme') || 
+                      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    
+    // Apply the saved theme
+    if (savedTheme === 'dark') {
+      document.body.classList.add('dark-mode');
+      icon.classList.replace('fa-moon', 'fa-sun');
+    }
+    
+    themeToggle.addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+      
+      if (document.body.classList.contains('dark-mode')) {
+        icon.classList.replace('fa-moon', 'fa-sun');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        icon.classList.replace('fa-sun', 'fa-moon');
+        localStorage.setItem('theme', 'light');
+      }
+    });
+    
+    // Attendance data fetch
+    fetch("http://localhost:3000/api/attendance")
+      .then(res => res.json())
+      .then(data => {
+        const tableBody = document.getElementById('attendanceBody');
+        tableBody.innerHTML = ''; // Clear loading message
+        
+        if (data.length === 0) {
+          tableBody.innerHTML = `<tr><td colspan="2" style="text-align:center; padding:30px; color:var(--loading-text);">No attendance records found</td></tr>`;
+          return;
+        }
+        
+        data.forEach((entry, index) => {
+          const row = document.createElement('tr');
+          row.style.opacity = '0';
+          row.innerHTML = `<td>${entry.fingerprintId}</td><td>${new Date(entry.timestamp).toLocaleString()}</td>`;
+          tableBody.appendChild(row);
+          
+          // Animate row appearance with staggered delay
+          setTimeout(() => {
+            row.style.transition = 'opacity 0.5s ease';
+            row.style.opacity = '1';
+          }, 100 * index);
+        });
+      })
+      .catch(err => {
+        console.error("Error loading attendance:", err);
+        document.getElementById('attendanceBody').innerHTML = 
+          `<tr><td colspan="2" style="text-align:center; padding:30px; color:var(--error-text);">Error loading attendance data</td></tr>`;
+      });
+  </script>
+</body>
+</html>
